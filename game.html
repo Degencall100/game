@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Audition Rhythm</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: sans-serif;
+      user-select: none;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+      width: 100vw;
+      height: 100vh;
+      background: #111;
+    }
+
+    #menu, #pauseMenu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      z-index: 10;
+    }
+
+    .touch-zone {
+      position: absolute;
+      bottom: 0;
+      width: 25%;
+      height: 20%;
+      min-height: 60px;
+      z-index: 5;
+    }
+
+    .touch-zone.up { left: 0%; }
+    .touch-zone.down { left: 25%; }
+    .touch-zone.left { left: 50%; }
+    .touch-zone.right { left: 75%; }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div id="menu">
+    <h1>Audition</h1>
+    <button onclick="startGame()">Start Game</button>
+  </div>
+  <div id="pauseMenu" style="display: none;">
+    <h2>Paused</h2>
+    <button onclick="resumeGame()">Resume</button>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+  <div class="touch-zone up" ontouchstart="handleTouch('up')"></div>
+  <div class="touch-zone down" ontouchstart="handleTouch('down')"></div>
+  <div class="touch-zone left" ontouchstart="handleTouch('left')"></div>
+  <div class="touch-zone right" ontouchstart="handleTouch('right')"></div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    let width, height;
+    let arrows = [];
+    let score = 0, combo = 0, totalHits = 0, totalNotes = 0, missCount = 0;
+    const maxMiss = 10;
+    let running = false;
+    let lastTime = 0;
+    const directions = ["up", "down", "left", "right"];
+    const keyMap = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right", w: "up", s: "down", a: "left", d: "right" };
+    const hitLineY = 0.8;
+    const noteSpeed = 0.5;
+    const timingWindows = { perfect: 50, good: 100 };
+
+    const backgroundImg = new Image();
+    backgroundImg.src = "https://i.imgur.com/ZZpIAiv.png";
+
+    const hitSound = new Audio("https://github.com/Degencall100/game/raw/refs/heads/main/game.mp3");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      width = canvas.width;
+      height = canvas.height;
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    backgroundImg.onload = () => {
+      ctx.drawImage(backgroundImg, 0, 0, width, height);
+    };
+
+    function startGame() {
+      document.getElementById("menu").style.display = "none";
+      score = combo = missCount = totalHits = totalNotes = 0;
+      arrows = [];
+      running = true;
+      lastTime = performance.now();
+      requestAnimationFrame(gameLoop);
+      spawnNotes();
+    }
+
+    function pauseGame() {
+      running = false;
+      document.getElementById("pauseMenu").style.display = "block";
+    }
+
+    function resumeGame() {
+      document.getElementById("pauseMenu").style.display = "none";
+      running = true;
+      lastTime = performance.now();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function restartGame() {
+      document.getElementById("pauseMenu").style.display = "none";
+      startGame();
+    }
+
+    function spawnNotes() {
+      setInterval(() => {
+        if (!running) return;
+        const dir = directions[Math.floor(Math.random() * 4)];
+        arrows.push({ direction: dir, y: -60, timestamp: performance.now() });
+        totalNotes++;
+      }, 800);
+    }
+
+    function drawArrow(x, y, dir) {
+      ctx.fillStyle = dir === "up" ? "red" : dir === "down" ? "blue" : dir === "left" ? "green" : "yellow";
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      const size = 50; // tăng kích thước mũi tên
+      if (dir === "up") {
+        ctx.lineTo(x - size * 0.4, y + size);
+        ctx.lineTo(x + size * 0.4, y + size);
+      } else if (dir === "down") {
+        ctx.lineTo(x - size * 0.4, y - size);
+        ctx.lineTo(x + size * 0.4, y - size);
+      } else if (dir === "left") {
+        ctx.lineTo(x + size, y - size * 0.4);
+        ctx.lineTo(x + size, y + size * 0.4);
+      } else {
+        ctx.lineTo(x - size, y - size * 0.4);
+        ctx.lineTo(x - size, y + size * 0.4);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function getArrowX(dir) {
+      const quarter = width / 4;
+      return directions.indexOf(dir) * quarter + quarter / 2;
+    }
+
+    function gameLoop(now) {
+      if (!running) return;
+      const dt = now - lastTime;
+      lastTime = now;
+
+      ctx.drawImage(backgroundImg, 0, 0, width, height);
+
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, height * hitLineY);
+      ctx.lineTo(width, height * hitLineY);
+      ctx.stroke();
+
+      for (let i = arrows.length - 1; i >= 0; i--) {
+        arrows[i].y += noteSpeed * dt;
+        drawArrow(getArrowX(arrows[i].direction), arrows[i].y, arrows[i].direction);
+        if (arrows[i].y > height) {
+          arrows.splice(i, 1);
+          combo = 0;
+          missCount++;
+          if (missCount >= maxMiss) {
+            running = false;
+            alert("Game Over! Bạn đã bấm sai 10 lần.");
+            document.getElementById("menu").style.display = "block";
+            return;
+          }
+        }
+      }
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "20px sans-serif";
+      ctx.fillText("Score: " + Math.round(score), 10, 30);
+      ctx.fillText("Combo: " + combo, 10, 60);
+      const acc = totalNotes ? ((totalHits / totalNotes) * 100).toFixed(1) : "100";
+      ctx.fillText("Accuracy: " + acc + "%", 10, 90);
+      ctx.fillText("Misses: " + missCount + "/" + maxMiss, 10, 120);
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function hit(direction) {
+      const lineY = height * hitLineY;
+      for (let i = 0; i < arrows.length; i++) {
+        const arrow = arrows[i];
+        if (arrow.direction === direction) {
+          const diff = Math.abs(arrow.y - lineY);
+          if (diff < timingWindows.perfect) {
+            score += 300 * (1 + combo * 0.1);
+            combo++;
+            totalHits++;
+            arrows.splice(i, 1);
+            hitSound.play();
+            return;
+          } else if (diff < timingWindows.good) {
+            score += 100 * (1 + combo * 0.1);
+            combo++;
+            totalHits++;
+            arrows.splice(i, 1);
+            hitSound.play();
+            return;
+          }
+        }
+      }
+      combo = 0;
+      missCount++;
+      if (missCount >= maxMiss) {
+        running = false;
+        alert("Game Over! Bạn đã bấm sai 10 lần.");
+        document.getElementById("menu").style.display = "block";
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const dir = keyMap[e.key];
+      if (dir) hit(dir);
+      if (e.key === "Escape") pauseGame();
+    });
+
+    function handleTouch(dir) {
+      hit(dir);
+    }
+  </script>
+</body>
+</html>
