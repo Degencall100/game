@@ -1,320 +1,358 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Audition Rhythm Game</title>
-    <script src="https://cdn.jsdelivr.net/npm/@farcade/game-sdk@latest/dist/index.min.js"></script>
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        background: #000;
-        font-family: sans-serif;
-        user-select: none;
-        height: 100%;
-        overflow: hidden;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title> Audition </title>
+  <style>
+    .menu {
+      background-color: transparent;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+    }
 
-      .wrapper {
-        max-width: 600px;
-        max-height: 1200px;
-        margin: auto;
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-      }
+    .logo {
+      width: 250px;
+      margin-bottom: 20px;
+    }
 
-      canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-        background: #111;
-      }
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      background-color: #ffc107;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
 
-      #menu, #pauseMenu {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: #0066cc;
-        color: white;
-        padding: 40px;
-        text-align: center;
-        z-index: 10;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      font-family: sans-serif;
+      user-select: none;
+      height: 100%;
+      overflow: hidden;
+    }
 
-      #menu h1 {
-        font-size: 48px;
-      }
+    .wrapper {
+      max-width: 600px;
+      max-height: 1200px;
+      margin: auto;
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
 
-      #menu button {
-        font-size: 24px;
-        padding: 15px 30px;
-        background: #ffcc00;
-        color: #333;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #111;
+    }
 
-      #menu button:hover {
-        background: #ffaa00;
-      }
+    #menu, #pauseMenu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgb(255, 255, 255);
+      padding: 40px;
+      text-align: center;
+      z-index: 10;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
 
-      .touch-zone {
-        position: absolute;
-        bottom: 0;
-        width: 25%;
-        height: 20%;
-        min-height: 60px;
-        z-index: 5;
-      }
+    #menu h1 {
+      font-size: 48px;
+    }
 
-      .touch-zone.up    { left: 0%;  }
-      .touch-zone.down  { left: 25%; }
-      .touch-zone.left  { left: 50%; }
-      .touch-zone.right { left: 75%; }
-    </style>
-  </head>
-  <body>
-    <div class="wrapper">
-      <canvas id="gameCanvas"></canvas>
-      <div id="menu">
-        <h1>Audition</h1>
-        <button onclick="startGame()">Start Game</button>
-      </div>
-      <div id="pauseMenu" style="display: none">
-        <h2>Paused</h2>
-        <button onclick="resumeGame()">Resume</button>
-        <button onclick="restartGame()">Restart</button>
-      </div>
-      <div class="touch-zone up" ontouchstart="handleTouch('up')"></div>
-      <div class="touch-zone down" ontouchstart="handleTouch('down')"></div>
-      <div class="touch-zone left" ontouchstart="handleTouch('left')"></div>
-      <div class="touch-zone right" ontouchstart="handleTouch('right')"></div>
+    #menu button {
+      font-size: 24px;
+      padding: 15px 30px;
+      background: #ffcc00;
+      color: #333;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #menu button:hover {
+      background: #f0a206;
+    }
+
+    .touch-zone {
+      position: absolute;
+      bottom: 0;
+      width: 25%;
+      height: 20%;
+      min-height: 60px;
+      z-index: 5;
+    }
+
+    .touch-zone.up    { left: 0%;  }
+    .touch-zone.down  { left: 25%; }
+    .touch-zone.left  { left: 50%; }
+    .touch-zone.right { left: 75%; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <canvas id="gameCanvas"></canvas>
+    <div id="menu">
+      <img src="assets/audition_logo.png" alt="New Audition Logo" class="logo" />
+      <button onclick="startGame()">Start Game</button>
     </div>
+    
+    <div id="pauseMenu" style="display: none">
+      <h2>Paused</h2>
+      <button onclick="resumeGame()">Resume</button>
+      <button onclick="restartGame()">Restart</button>
+    </div>
+    <div class="touch-zone up" ontouchstart="handleTouch('up')"></div>
+    <div class="touch-zone down" ontouchstart="handleTouch('down')"></div>
+    <div class="touch-zone left" ontouchstart="handleTouch('left')"></div>
+    <div class="touch-zone right" ontouchstart="handleTouch('right')"></div>
+  </div>
 
-    <script>
-      const canvas = document.getElementById("gameCanvas");
-      const ctx = canvas.getContext("2d");
-      let width, height;
-      let lastTime = 0;
-      let arrows = [];
-      let score = 0, combo = 0, missCount = 0;
-      let totalHits = 0, totalNotes = 0;
-      let running = false;
-      const maxMiss = 5;
-      let spawnInterval;
-      let gameStartTime = null;
-      let noteSpeed = 0.5;
-      let flashes = []; // Lưu các hiệu ứng sáng tạm thời
-      const directions = ["up", "down", "left", "right"];
-      const keyMap = {
-        ArrowUp: "up", ArrowDown: "down",
-        ArrowLeft: "left", ArrowRight: "right",
-        w: "up", s: "down", a: "left", d: "right"
-      };
-      const hitLineY = 0.8;
-      const timingWindows = { perfect: 50, good: 100 };
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    let width, height;
+    let lastTime = 0;
+    let arrows = [];
+    let score = 0, combo = 0, missCount = 0;
+    let totalHits = 0, totalNotes = 0;
+    let running = false;
+    const maxMiss = 5;
+    let spawnInterval;
+    let gameStartTime = null;
+    let noteSpeed = 0.5;
+    const directions = ["up", "down", "left", "right"];
+    const keyMap = {
+      ArrowUp: "up", ArrowDown: "down",
+      ArrowLeft: "left", ArrowRight: "right",
+      w: "up", s: "down", a: "left", d: "right"
+    };
+    const hitLineY = 0.8;
+    const timingWindows = { perfect: 70, good: 130 };
 
-      const backgroundImg = new Image();
-      backgroundImg.src = "assets/nen.png";
-      let backgroundLoaded = false;
-      backgroundImg.onload = () => backgroundLoaded = true;
+    const arrowImages = {
+      up: new Image(),
+      down: new Image(),
+      left: new Image(),
+      right: new Image()
+    };
 
-      const hitSound = new Audio("sounds/game.mp3");
-      const bgMusic = new Audio("sounds/nhacnen.mp3");
-      bgMusic.loop = true;
-      bgMusic.volume = 0.4;
+    arrowImages.up.src = "assets/arrow_up.png";
+    arrowImages.down.src = "assets/arrow_down.png";
+    arrowImages.left.src = "assets/arrow_left.png";
+    arrowImages.right.src = "assets/arrow_right.png";
 
-      function resizeCanvas() {
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-        width = canvas.width;
-        height = canvas.height;
-      }
+    const backgroundImg = new Image();
+    backgroundImg.src = "assets/nen.png"; // thay bằng đường dẫn ảnh nền nếu cần
+    let backgroundLoaded = false;
+    backgroundImg.onload = () => {
+      backgroundLoaded = true;
+      drawInitialBackground();
+    };
 
-      window.addEventListener("resize", resizeCanvas);
+    const hitSound = new Audio("sounds/game.mp3");
+    const bgMusic = new Audio("sounds/nhacnen.mp3");
+    bgMusic.loop = true;
+    bgMusic.volume = 0.4;
+
+    // Thêm mảng để lưu hiệu ứng khi bấm đúng mũi tên
+    let arrowEffects = [];  // Mảng lưu các hiệu ứng của mũi tên
+    const arrowHitEffectDuration = 300;  // Thời gian hiệu ứng kéo dài (ms)
+
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+      width = canvas.width;
+      height = canvas.height;
+    }
+
+    window.addEventListener("resize", () => {
       resizeCanvas();
+      drawInitialBackground();
+    });
 
-      function startGame() {
-        document.getElementById("menu").style.display = "none";
-        score = combo = missCount = totalHits = totalNotes = 0;
-        arrows = [];
-        gameStartTime = performance.now();
-        noteSpeed = 0.5;
-        if (spawnInterval) clearInterval(spawnInterval);
-        running = true;
-        bgMusic.currentTime = 0;
-        bgMusic.play();
-        requestAnimationFrame(gameLoop);
-        spawnNotes();
-        window.FarcadeSDK?.singlePlayer?.actions?.ready?.();
+    function drawInitialBackground() {
+      if (!ctx) return;
+      if (backgroundLoaded) {
+        ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = "#111";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
+    }
 
-      function pauseGame() {
-        running = false;
-        bgMusic.pause();
-        document.getElementById("pauseMenu").style.display = "block";
-      }
+    resizeCanvas();
+    drawInitialBackground();
 
-      function resumeGame() {
-        document.getElementById("pauseMenu").style.display = "none";
-        lastTime = performance.now();
-        running = true;
-        bgMusic.play();
-        requestAnimationFrame(gameLoop);
-      }
+    function startGame() {
+      document.getElementById("menu").style.display = "none";
+      score = combo = missCount = totalHits = totalNotes = 0;
+      arrows = [];
+      gameStartTime = performance.now();
+      noteSpeed = 0.5;
+      if (spawnInterval) clearInterval(spawnInterval);
+      running = true;
+      bgMusic.currentTime = 0;
+      bgMusic.play();
+      requestAnimationFrame(gameLoop);
+      spawnNotes();
+    }
 
-      function restartGame() {
-        document.getElementById("pauseMenu").style.display = "none";
-        startGame();
-      }
+    function pauseGame() {
+      running = false;
+      bgMusic.pause();
+      document.getElementById("pauseMenu").style.display = "block";
+    }
 
-      function spawnNotes() {
-        spawnInterval = setInterval(() => {
-          if (!running) return;
-          const dir = directions[Math.floor(Math.random() * 4)];
-          arrows.push({ direction: dir, y: -60, timestamp: performance.now() });
-          totalNotes++;
-        }, 800);
-      }
+    function resumeGame() {
+      document.getElementById("pauseMenu").style.display = "none";
+      lastTime = performance.now();
+      running = true;
+      bgMusic.play();
+      requestAnimationFrame(gameLoop);
+    }
 
-      function drawArrow(x, y, dir) {
-        ctx.font = "40px sans-serif";
-        ctx.textAlign = "center";
-        const arrowChar = { up: "⬆️", down: "⬇️", left: "⬅️", right: "➡️" }[dir];
-        ctx.fillText(arrowChar, x, y);
-      }
+    function restartGame() {
+      document.getElementById("pauseMenu").style.display = "none";
+      startGame();
+    }
 
-      function getArrowX(dir) {
-        const quarter = width / 4;
-        return directions.indexOf(dir) * quarter + quarter / 2;
-      }
-
-      function gameLoop(now) {
+    function spawnNotes() {
+      spawnInterval = setInterval(() => {
         if (!running) return;
-        const dt = now - lastTime;
-        lastTime = now;
-        const elapsed = (now - gameStartTime) / 1000;
-        noteSpeed = Math.min(1.5, 0.5 + elapsed * 0.01);
+        const dir = directions[Math.floor(Math.random() * 4)];
+        arrows.push({ direction: dir, y: -60, timestamp: performance.now() });
+        totalNotes++;
+      }, 800);
+    }
 
-        if (backgroundLoaded) {
-          ctx.drawImage(backgroundImg, 0, 0, width, height);
-        } else {
-          ctx.fillStyle = "#111";
-          ctx.fillRect(0, 0, width, height);
+    function drawArrow(x, y, dir) {
+      const img = arrowImages[dir];
+      if (img.complete) {
+        ctx.drawImage(img, x - 50, y - 50, 100, 100); // tăng size lên 100x100 và căn giữa
+      }
+
+      // Vẽ các hiệu ứng cho mũi tên khi hit đúng
+      arrowEffects.forEach(effect => {
+        const timeElapsed = performance.now() - effect.time;
+        if (timeElapsed < arrowHitEffectDuration) {
+          const alpha = 1 - (timeElapsed / arrowHitEffectDuration);  // Tạo hiệu ứng mờ dần
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = "rgba(0, 255, 0, 1)";  // Hiệu ứng màu xanh lá khi hit đúng
+          ctx.beginPath();
+          ctx.arc(effect.x, effect.y, 50, 0, Math.PI * 2);
+          ctx.fill();
         }
-        const nowTime = performance.now();
-for (let i = flashes.length - 1; i >= 0; i--) {
-  const flash = flashes[i];
-  const age = nowTime - flash.time;
-  if (age > 200) {
-    flashes.splice(i, 1);
-    continue;
-  }
+      });
 
-  const alpha = 1 - age / 200;
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.beginPath();
-  ctx.arc(flash.x, flash.y, 30 + age * 0.2, 0, Math.PI * 2);
-  ctx.fillStyle = "yellow";
-  ctx.fill();
-  ctx.restore();
-}
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 6;
-        ctx.beginPath();
-        ctx.moveTo(0, height * hitLineY);
-        ctx.lineTo(width, height * hitLineY);
-        ctx.stroke();
+      ctx.globalAlpha = 1;  // Reset alpha để tránh ảnh hưởng tới các phần khác
+    }
 
-        for (let i = arrows.length - 1; i >= 0; i--) {
-          arrows[i].y += noteSpeed * dt;
-          drawArrow(getArrowX(arrows[i].direction), arrows[i].y, arrows[i].direction);
-          if (arrows[i].y > height) {
+    function getArrowX(dir) {
+      const quarter = width / 4;
+      return directions.indexOf(dir) * quarter + quarter / 2;
+    }
+
+    function gameLoop(now) {
+      if (!running) return;
+      const dt = now - lastTime;
+      lastTime = now;
+      const elapsed = (now - gameStartTime) / 1000;
+      noteSpeed = Math.min(1.5, 0.5 + elapsed * 0.02);
+
+      if (backgroundLoaded) {
+        ctx.drawImage(backgroundImg, 0, 0, width, height);
+      } else {
+        ctx.fillStyle = "#111";
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      ctx.strokeStyle = "red";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(0, height * hitLineY);
+      ctx.lineTo(width, height * hitLineY);
+      ctx.stroke();
+
+      for (let i = arrows.length - 1; i >= 0; i--) {
+        arrows[i].y += noteSpeed * dt;
+        drawArrow(getArrowX(arrows[i].direction), arrows[i].y, arrows[i].direction);
+        if (arrows[i].y > height) {
+          arrows.splice(i, 1);
+          combo = 0;
+          missCount++;
+          if (missCount >= maxMiss) return endGame();
+        }
+      }
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "18px sans-serif";
+      ctx.textAlign = "left";
+      const marginX = 10;
+      const baseY = height - 100;
+      const acc = totalNotes ? ((totalHits / totalNotes) * 100).toFixed(1) : "100";
+      ctx.fillText("Score: " + Math.round(score), marginX, baseY);
+      ctx.fillText("Combo: " + combo, marginX, baseY + 22);
+      ctx.fillText("Accuracy: " + acc + "%", marginX, baseY + 44);
+      ctx.fillText("Misses: " + missCount + "/" + maxMiss, marginX, baseY + 66);
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function hit(direction) {
+      const lineY = height * hitLineY;
+      for (let i = 0; i < arrows.length; i++) {
+        const arrow = arrows[i];
+        if (arrow.direction === direction) {
+          const diff = Math.abs(arrow.y - lineY);
+          if (diff < timingWindows.perfect || diff < timingWindows.good) {
+            score += (diff < timingWindows.perfect ? 300 : 100) * (1 + combo * 0.1);
+            combo++;
+            totalHits++;
             arrows.splice(i, 1);
-            combo = 0;
-            missCount++;
-            if (missCount >= maxMiss) return endGame();
+            hitSound.currentTime = 0;
+            hitSound.play();
+            window.navigator.vibrate?.(50);
+            
+            // Thêm hiệu ứng cho mũi tên vừa hit đúng
+            arrowEffects.push({ x: getArrowX(arrow.direction), y: arrow.y, direction: arrow.direction, time: performance.now() });
+            
+            return;
           }
         }
-
-        ctx.fillStyle = "#fff";
-        ctx.font = "18px sans-serif";
-        ctx.textAlign = "left";
-        const marginX = 10;
-        const baseY = height - 100;
-        const acc = totalNotes ? ((totalHits / totalNotes) * 100).toFixed(1) : "100";
-        ctx.fillText("Score: " + Math.round(score), marginX, baseY);
-        ctx.fillText("Combo: " + combo, marginX, baseY + 22);
-        ctx.fillText("Accuracy: " + acc + "%", marginX, baseY + 44);
-        ctx.fillText("Misses: " + missCount + "/" + maxMiss, marginX, baseY + 66);
-
-        requestAnimationFrame(gameLoop);
       }
+      combo = 0;
+      missCount++;
+      if (missCount >= maxMiss) endGame();
+    }
 
-      function hit(direction) {
-        const lineY = height * hitLineY;
-        for (let i = 0; i < arrows.length; i++) {
-          const arrow = arrows[i];
-          if (arrow.direction === direction) {
-            const diff = Math.abs(arrow.y - lineY);
-            if (diff < timingWindows.perfect || diff < timingWindows.good) {
-              score += (diff < timingWindows.perfect ? 300 : 100) * (1 + combo * 0.1);
-              combo++;
-              totalHits++;
-              const arrowX = getArrowX(arrow.direction);
-              const arrowY = arrow.y;
-              flashes.push({ x: arrowX, y: arrowY, time: performance.now() });
+    function endGame() {
+      running = false;
+      clearInterval(spawnInterval);
+      bgMusic.pause();
+      document.getElementById("menu").style.display = "block";
+    }
 
-              arrows.splice(i, 1);
-              hitSound.currentTime = 0;
-              hitSound.play();
+    document.addEventListener("keydown", (e) => {
+      const dir = keyMap[e.key];
+      if (dir) hit(dir);
+      if (e.key === "Escape") pauseGame();
+    });
 
-              window.navigator.vibrate?.(50);
-              window.FarcadeSDK?.singlePlayer?.actions?.hapticFeedback?.();
-              return;
-            }
-          }
-        }
-        combo = 0;
-        missCount++;
-        if (missCount >= maxMiss) endGame();
-      }
-
-      function endGame() {
-        running = false;
-        clearInterval(spawnInterval);
-        bgMusic.pause();
-        window.FarcadeSDK?.singlePlayer?.actions?.gameOver?.({ score: Math.round(score) });
-        document.getElementById("menu").style.display = "block";
-      }
-
-      document.addEventListener("keydown", (e) => {
-        const dir = keyMap[e.key];
-        if (dir) hit(dir);
-        if (e.key === "Escape") pauseGame();
-      });
-
-      function handleTouch(dir) {
-        hit(dir);
-      }
-
-      // Farcade SDK
-      window.FarcadeSDK?.on?.("play_again", () => {
-        startGame();
-      });
-
-      window.FarcadeSDK?.on?.("toggle_mute", (data) => {
-        hitSound.muted = !!data?.isMuted;
-        bgMusic.muted = !!data?.isMuted;
-      });
-    </script>
-  </body>
+    function handleTouch(dir) {
+      hit(dir);
+    }
+  </script>
+</body>
 </html>
